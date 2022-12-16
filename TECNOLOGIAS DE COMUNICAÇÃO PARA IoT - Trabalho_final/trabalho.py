@@ -31,7 +31,7 @@ def levelOfBattery(nSensor, host, port):
 
 
 def infoLevelOfBattery(battery, nSensor):
-    if (battery[nSensor] >= 80 and battery[nSensor] <= 83):
+    if (battery[nSensor] == 80):
         message = ("Sensor" + str(nSensor+1) + " atingiu nível crítico de bateria.")
         return message
     elif (battery[nSensor] >= 100):
@@ -60,6 +60,7 @@ def batterysInformation(battery, continueLoop):
         
         msg_to_be_sent = finalMessageBattery(battery, nSensor)
         
+        print(str(nSensor), str(battery[nSensor]) +" "+ msg_to_be_sent)
         if (nSensor == 0):
             client.publish(THE_TOPIC+"/sensor1", 
                         payload=battery[nSensor], 
@@ -76,10 +77,8 @@ def batterysInformation(battery, continueLoop):
                         qos=0, 
                         retain=True)
     
-    
-    print(str(nSensor), str(battery[nSensor]) + msg_to_be_sent)
     continueLoop = verifyIfFinished(battery, port=12345)
-
+    
     return continueLoop
     
 
@@ -102,8 +101,8 @@ battery = [0,0,0]
 continueLoop = True
 
 while continueLoop:
-    continueLoop = batterysInformation(battery, continueLoop)
-    time.sleep(1)
+	continueLoop = batterysInformation(battery, continueLoop)
+	time.sleep(1)
 
 
 
