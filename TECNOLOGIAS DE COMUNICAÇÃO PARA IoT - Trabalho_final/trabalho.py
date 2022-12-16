@@ -52,6 +52,39 @@ def verifyIfFinished(battery, port):
         return False
     return True
 
+def batterysInformation(battery, continueLoop):
+    host = '127.0.0.1'
+    for nSensor in range(0,3):
+    
+        battery[nSensor] = levelOfBattery(nSensor, host, port=12345)
+        
+        msg_to_be_sent = finalMessageBattery(battery, nSensor)
+        
+        if (nSensor == 0):
+            client.publish(THE_TOPIC+"/sensor1", 
+                        payload=battery[nSensor], 
+                        qos=0, 
+                        retain=True)
+        elif (nSensor == 1):
+            client.publish(THE_TOPIC+"/sensor2", 
+                        payload=battery[nSensor], 
+                        qos=0, 
+                        retain=True)
+        elif (nSensor == 2):
+            client.publish(THE_TOPIC+"/sensor3", 
+                        payload=battery[nSensor], 
+                        qos=0, 
+                        retain=True)
+    
+    
+    print(str(nSensor), str(battery[nSensor]) + msg_to_be_sent)
+    continueLoop = verifyIfFinished(battery, port=12345)
+
+    return continueLoop
+    
+
+
+
 
 client = mqtt.Client(client_id=CLIENT_ID, 
                      clean_session=True, 
@@ -66,36 +99,10 @@ client.connect("broker.hivemq.com", port=1883, keepalive=60)
 client.loop_start()
 
 battery = [0,0,0]
-sensor = 0
 continueLoop = True
-while continueLoop:
 
-    host = '127.0.0.1'
-    nSensor = sensor%3
-    battery[nSensor] = levelOfBattery(nSensor, host, port=12345)
-    
-    msg_to_be_sent = finalMessageBattery(battery, nSensor)
-    
-    if (nSensor == 0):
-        client.publish(THE_TOPIC+"/sensor1", 
-                    payload=battery[nSensor], 
-                    qos=0, 
-                    retain=True)
-    elif (nSensor == 1):
-        client.publish(THE_TOPIC+"/sensor2", 
-                    payload=battery[nSensor], 
-                    qos=0, 
-                    retain=True)
-    elif (nSensor == 2):
-        client.publish(THE_TOPIC+"/sensor3", 
-                    payload=battery[nSensor], 
-                    qos=0, 
-                    retain=True)
-    
-    
-    print(str(nSensor), str(battery[nSensor]) + msg_to_be_sent)
-    continueLoop = verifyIfFinished(battery, port=12345)
-    sensor+=1
+while continueLoop:
+    continueLoop = batterysInformation(battery, continueLoop)
     time.sleep(1)
 
 
