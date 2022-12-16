@@ -2,7 +2,7 @@
 # File: trabalho.py
 
 import socket
-
+import time
 import paho.mqtt.client as mqtt
 
 THE_BROKER = "broker.hivemq.com"
@@ -22,7 +22,7 @@ def levelOfBattery(nSensor, host, port):
     if (nSensor == 2):
         s.send('get.sensor3.wintfs[0].consumption'.encode('utf-8'))
     
-    battery = float(s.recv(1024).decode('utf-8'))
+    battery = int(float(s.recv(1024).decode('utf-8'))//1)
 
     if (battery >= 100):
         battery = 100
@@ -30,11 +30,11 @@ def levelOfBattery(nSensor, host, port):
     return battery
 
 
-def infoLevelOfBattery(level, nSensor):
-    if (level > 79.9 and level <= 80.5):
+def infoLevelOfBattery(battery, nSensor):
+    if (battery[nSensor] >= 80 and battery[nSensor] <= 83):
         message = ("Sensor" + str(nSensor+1) + " atingiu nível crítico de bateria.")
         return message
-    elif (level >= 100):
+    elif (battery[nSensor] >= 100):
         message = ("Sensor" + str(nSensor+1) + " está sem bateria.")
         return message
     else: 
@@ -43,15 +43,11 @@ def infoLevelOfBattery(level, nSensor):
 
 
 def finalMessageBattery(battery, nSensor):
-    message = str(battery) + " " + infoLevelOfBattery(battery, nSensor)
+    message = infoLevelOfBattery(battery, nSensor)
     return message
 
 
-def verifyIfFinished(host, port):
-    battery = [0,0,0]
-    for i in range(0,3):
-        battery[i] = levelOfBattery(i, host, port)
-    
+def verifyIfFinished(battery, port):
     if(battery[0] == 100 and battery[1] == 100 and battery[2] == 100):
         return False
     return True
@@ -69,37 +65,38 @@ client.connect("broker.hivemq.com", port=1883, keepalive=60)
 
 client.loop_start()
 
-
+battery = [0,0,0]
 sensor = 0
 continueLoop = True
 while continueLoop:
 
     host = '127.0.0.1'
     nSensor = sensor%3
-    battery = levelOfBattery(nSensor, host, port=12345)
-
-    continueLoop = verifyIfFinished(host, port=12345)
+    battery[nSensor] = levelOfBattery(nSensor, host, port=12345)
+    
     msg_to_be_sent = finalMessageBattery(battery, nSensor)
     
     if (nSensor == 0):
         client.publish(THE_TOPIC+"/sensor1", 
-                    payload=msg_to_be_sent, 
+                    payload=battery[nSensor], 
                     qos=0, 
                     retain=True)
     elif (nSensor == 1):
         client.publish(THE_TOPIC+"/sensor2", 
-                    payload=msg_to_be_sent, 
+                    payload=battery[nSensor], 
                     qos=0, 
                     retain=True)
     elif (nSensor == 2):
         client.publish(THE_TOPIC+"/sensor3", 
-                    payload=msg_to_be_sent, 
+                    payload=battery[nSensor], 
                     qos=0, 
                     retain=True)
     
     
-    print(msg_to_be_sent)
+    print(str(nSensor), str(battery[nSensor]) + msg_to_be_sent)
+    continueLoop = verifyIfFinished(battery, port=12345)
     sensor+=1
+    time.sleep(1)
 
 
 
