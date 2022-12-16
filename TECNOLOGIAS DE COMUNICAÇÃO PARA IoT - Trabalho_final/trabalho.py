@@ -31,11 +31,11 @@ def levelOfBattery(nSensor, host, port):
 
 
 def infoLevelOfBattery(level, nSensor):
-    if (level > 79.9 and level <= 80.3):
-        message = ("Sensor" + str(nSensor) + " atingiu nível crítico de bateria.")
+    if (level > 79.9 and level <= 80.5):
+        message = ("Sensor" + str(nSensor+1) + " atingiu nível crítico de bateria.")
         return message
     elif (level >= 100):
-        message = ("Sensor" + str(nSensor) + " está sem bateria.")
+        message = ("Sensor" + str(nSensor+1) + " está sem bateria.")
         return message
     else: 
         return ""
@@ -43,14 +43,14 @@ def infoLevelOfBattery(level, nSensor):
 
 
 def finalMessageBattery(battery, nSensor):
-    message = str(battery) + infoLevelOfBattery(battery, nSensor)
+    message = str(battery) + " " + infoLevelOfBattery(battery, nSensor)
     return message
 
 
 def verifyIfFinished(host, port):
-    battery = []
+    battery = [0,0,0]
     for i in range(0,3):
-        battery.append(levelOfBattery(i, host, port))
+        battery[i] = levelOfBattery(i, host, port)
     
     if(battery[0] == 100 and battery[1] == 100 and battery[2] == 100):
         return False
