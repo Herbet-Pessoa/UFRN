@@ -1,0 +1,6 @@
+pegar o pdf
+pegar cada pag do pdf como uma img
+tormar a img em escala de cinza
+
+erodir e dilatar cada img
+juntar todas as imgs em um unico pdf novamente
